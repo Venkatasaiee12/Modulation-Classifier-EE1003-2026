@@ -1,9 +1,7 @@
 import numpy as np
 import adi
 
-# ===================================
 # 1. SDR SETUP
-# ===================================
 sdr = adi.Pluto("ip:192.168.2.1")
 
 sample_rate = 1e6
@@ -24,16 +22,12 @@ for _ in range(5):
 
 rx = sdr.rx()
 
-# ===================================
 # 2. PARAMETERS
-# ===================================
 samples_per_bit = 50
 
 preamble = [1,1,1,0,0,0,1,0,1,1,0,1,0,0,1,1]
 
-# ===================================
 # 3. DEMODULATION
-# ===================================
 decoded_bits = []
 
 for i in range(0, len(rx) - samples_per_bit, samples_per_bit):
@@ -45,9 +39,7 @@ for i in range(0, len(rx) - samples_per_bit, samples_per_bit):
     peak = freqs[np.argmax(np.abs(spectrum))]
     decoded_bits.append(1 if peak > 0 else 0)
 
-# ===================================
 # 4. FIND PREAMBLE
-# ===================================
 sync_found = False
 
 for i in range(len(decoded_bits) - len(preamble)):
@@ -56,9 +48,7 @@ for i in range(len(decoded_bits) - len(preamble)):
 
         start = i + len(preamble)
 
-        # ===================================
         # 5. READ LENGTH (8 bits)
-        # ===================================
         len_bits = decoded_bits[start:start + 8]
 
         if len(len_bits) < 8:
@@ -66,9 +56,7 @@ for i in range(len(decoded_bits) - len(preamble)):
 
         msg_len = int(''.join(map(str, len_bits)), 2)
 
-        # ===================================
         # 6. READ MESSAGE
-        # ===================================
         data_start = start + 8
         data_end = data_start + msg_len * 8
 
@@ -85,7 +73,7 @@ for i in range(len(decoded_bits) - len(preamble)):
         print("\nReceived Message:")
         print(received_text)
 
-        break  # ✅ only one message
+        break
 
 if not sync_found:
     print("Sync not found")
